@@ -13,6 +13,15 @@ class Player:
         self.jump_start_frames = self.load_frames("Player_Jump_Start", 6)
         self.jump_loop_frames = self.load_frames("Player_Jump_Loop", 6)
 
+        # Carrega o som do pulo
+        jump_sound_path = os.path.join(
+            const.ASSET_FOLDER,
+            const.JUMP_SOUND
+        )
+
+        self.jump_sound = pygame.mixer.Sound(jump_sound_path)
+        self.jump_sound.set_volume(0.5)
+
         # Controle da animação
         self.current_animation = "run"
         self.current_frame = 0
@@ -69,6 +78,9 @@ class Player:
 
             self.is_jumping = True
             self.velocity_y = const.PLAYER_JUMP_STRENGTH
+
+            # Reproduz o som do pulo
+            self.jump_sound.play()
 
             self.current_animation = "jump_start"
             self.current_frame = 0

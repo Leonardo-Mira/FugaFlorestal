@@ -1,4 +1,5 @@
 
+import os
 import pygame
 from code import const
 from code.menu import Menu
@@ -13,6 +14,16 @@ class Game:
 
         # Inicialização do Pygame
         pygame.init()
+
+        # Carrega a música de fundo
+        music_path = os.path.join(
+            const.ASSET_FOLDER,
+            const.BACKGROUND_MUSIC
+        )
+
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.play(-1)
 
         # Configuração da janela
         self.screen = pygame.display.set_mode(
@@ -286,7 +297,7 @@ class Game:
 
                 # Define a mensagem conforme o resultado
                 if self.victory:
-                    message = "VOCÊ VENCEU!"
+                    message = "VOCE VENCEU!"
                 else:
                     message = "GAME OVER"
 
