@@ -1,10 +1,13 @@
+
 import pygame
 from code import const
+from code.parallax import Parallax
 
 
 class Game:
 
     def __init__(self):
+
         # Inicialização do Pygame
         pygame.init()
 
@@ -15,6 +18,9 @@ class Game:
 
         pygame.display.set_caption(const.SCREEN_TITLE)
 
+        # Inicialização do cenário Parallax
+        self.parallax = Parallax(self.screen)
+
         # Controle de FPS
         self.clock = pygame.time.Clock()
 
@@ -22,25 +28,28 @@ class Game:
         self.running = True
 
     def handle_events(self):
-        # Captura dos eventos
+
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
                 self.running = False
 
     def update(self):
-        # Atualização dos elementos do jogo
-        pass
+
+        # Atualiza o cenário Parallax
+        self.parallax.update()
 
     def draw(self):
-        # Desenho dos elementos na tela
-        self.screen.fill((30, 80, 45))
+
+        # Desenha o cenário Parallax
+        self.parallax.draw()
 
         pygame.display.flip()
 
     def run(self):
-        # Loop principal do jogo
+
         while self.running:
+
             self.handle_events()
             self.update()
             self.draw()

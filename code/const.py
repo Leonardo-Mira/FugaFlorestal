@@ -17,3 +17,13 @@ OBSTACLE_SPEED = 6
 
 # Caminhos dos assets
 ASSET_FOLDER = "asset"
+
+# Imagem completa para o menu
+BACKGROUND_IMAGE = "Menu_forest.png"
+
+# Camadas do cenário (Parallax)
+SKY_IMAGE = "Sky.png"
+BG_DECOR_IMAGE = "BG_Decor.png"
+MIDDLE_DECOR_IMAGE = "Middle_Decor.png"
+FOREGROUND_IMAGE = "Foreground.png"
+GROUND_IMAGE = "Ground.png"
