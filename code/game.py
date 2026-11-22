@@ -1,6 +1,7 @@
 
 import pygame
 from code import const
+from code.menu import Menu
 from code.parallax import Parallax
 from code.player import Player
 from code.obstacle import ObstacleManager
@@ -30,8 +31,30 @@ class Game:
 
         # Controle da execução
         self.running = True
+        self.game_started = False
         self.game_over = False
         self.victory = False
+
+        # Inicializa o menu
+        self.menu = Menu(self.screen)
+
+        # Opções das telas de resultado
+        self.result_font = pygame.font.Font(None, 45)
+        self.selected_result_option = 0
+
+        self.restart_button = pygame.Rect(
+            const.SCREEN_WIDTH // 2 - 180,
+            390,
+            360,
+            60
+        )
+
+        self.menu_button = pygame.Rect(
+            const.SCREEN_WIDTH // 2 - 180,
+            470,
+            360,
+            60
+        )
 
         # Inicializa os elementos da partida
         self.reset_game()
@@ -54,6 +77,9 @@ class Game:
         self.game_over = False
         self.victory = False
 
+        # Seleciona a primeira opção
+        self.selected_result_option = 0
+
     def handle_events(self):
 
         for event in pygame.event.get():
@@ -61,15 +87,71 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
 
-            if event.type == pygame.KEYDOWN:
+            # Eventos do menu inicial
+            if not self.game_started:
 
-                # Pulo do personagem
-                if event.key == pygame.K_SPACE and not self.game_over and not self.victory:
-                    self.player.jump()
+                action = self.menu.handle_events(event)
 
-                # Reinicia a partida
-                if event.key == pygame.K_r and (self.game_over or self.victory):
+                if action == "play":
                     self.reset_game()
+                    self.game_started = True
+
+                elif action == "exit":
+                    self.running = False
+
+            # Eventos durante a partida
+            else:
+
+                # Eventos da tela de Game Over ou Vitória
+                if self.game_over or self.victory:
+
+                    if event.type == pygame.KEYDOWN:
+
+                        # Navegação entre as opções
+                        if event.key in (pygame.K_UP, pygame.K_DOWN):
+
+                            self.selected_result_option = (
+                                1 - self.selected_result_option
+                            )
+
+                        # Confirma a opção selecionada
+                        if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+
+                            if self.selected_result_option == 0:
+
+                                # Reinicia a partida
+                                self.reset_game()
+
+                            else:
+
+                                # Volta para o menu
+                                self.reset_game()
+                                self.game_started = False
+                                self.menu.selected_option = 0
+
+                    # Seleção pelo mouse
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+
+                        if event.button == 1:
+
+                            if self.restart_button.collidepoint(event.pos):
+
+                                self.reset_game()
+
+                            elif self.menu_button.collidepoint(event.pos):
+
+                                self.reset_game()
+                                self.game_started = False
+                                self.menu.selected_option = 0
+
+                # Eventos durante a partida ativa
+                else:
+
+                    if event.type == pygame.KEYDOWN:
+
+                        # Pulo do personagem
+                        if event.key == pygame.K_SPACE:
+                            self.player.jump()
 
     def check_collision(self):
 
@@ -98,7 +180,7 @@ class Game:
     def update(self):
 
         # Atualiza o jogo somente enquanto estiver ativo
-        if not self.game_over and not self.victory:
+        if self.game_started and not self.game_over and not self.victory:
 
             # Atualiza o cenário
             self.parallax.update()
@@ -120,77 +202,138 @@ class Game:
 
                 self.victory = True
 
-    def draw(self):
+    def draw_result_button(self, button, text, selected):
 
-        # Desenha o cenário
-        self.parallax.draw()
+        # Define a cor do botão
+        if selected:
+            color = (70, 160, 75)
+        else:
+            color = (45, 120, 55)
 
-        # Desenha os obstáculos
-        self.obstacle_manager.draw(self.screen)
+        # Desenha o botão
+        pygame.draw.rect(
+            self.screen,
+            color,
+            button,
+            border_radius=12
+        )
 
-        # Desenha o personagem
-        self.player.draw(self.screen)
+        # Destaca a opção selecionada
+        if selected:
 
-        # Mostra a distância percorrida
-        distance_text = self.distance_font.render(
-            f"Distância: {int(self.distance)} m",
+            pygame.draw.rect(
+                self.screen,
+                (255, 255, 255),
+                button,
+                3,
+                border_radius=12
+            )
+
+        # Desenha o texto
+        button_text = self.result_font.render(
+            text,
             True,
             (255, 255, 255)
         )
 
-        self.screen.blit(
-            distance_text,
-            (30, 25)
+        button_rect = button_text.get_rect(
+            center=button.center
         )
 
-        # Mostra Game Over ou Vitória
-        if self.game_over or self.victory:
+        self.screen.blit(button_text, button_rect)
 
-            overlay = pygame.Surface(
-                (const.SCREEN_WIDTH, const.SCREEN_HEIGHT)
-            )
+    def draw(self):
 
-            overlay.set_alpha(150)
-            overlay.fill((0, 0, 0))
+        # Mostra o menu inicial
+        if not self.game_started:
 
-            self.screen.blit(overlay, (0, 0))
+            self.menu.draw()
 
-            # Define a mensagem conforme o resultado
-            if self.victory:
-                message = "VOCE VENCEU!"
-            else:
-                message = "GAME OVER"
+        else:
 
-            text = self.game_over_font.render(
-                message,
+            # Desenha o cenário
+            self.parallax.draw()
+
+            # Desenha os obstáculos
+            self.obstacle_manager.draw(self.screen)
+
+            # Desenha o personagem
+            self.player.draw(self.screen)
+
+            # Mostra a distância percorrida
+            distance_text = self.distance_font.render(
+                f"Distância: {int(self.distance)} m",
                 True,
                 (255, 255, 255)
             )
 
-            text_rect = text.get_rect(
-                center=(
-                    const.SCREEN_WIDTH // 2,
-                    const.SCREEN_HEIGHT // 2 - 30
+            self.screen.blit(
+                distance_text,
+                (30, 25)
+            )
+
+            # Mostra Game Over ou Vitória
+            if self.game_over or self.victory:
+
+                overlay = pygame.Surface(
+                    (const.SCREEN_WIDTH, const.SCREEN_HEIGHT)
                 )
-            )
 
-            self.screen.blit(text, text_rect)
+                overlay.set_alpha(150)
+                overlay.fill((0, 0, 0))
 
-            # Instrução para reiniciar
-            restart_text = self.restart_font.render(
-                "Pressione R para jogar novamente",
-                True,
-                (255, 255, 255)
-            )
+                self.screen.blit(overlay, (0, 0))
 
-            restart_rect = restart_text.get_rect(
-                center=(
-                    const.SCREEN_WIDTH // 2,
-                    const.SCREEN_HEIGHT // 2 + 40
+                # Define a mensagem conforme o resultado
+                if self.victory:
+                    message = "VOCE VENCEU!"
+                else:
+                    message = "GAME OVER"
+
+                text = self.game_over_font.render(
+                    message,
+                    True,
+                    (255, 255, 255)
                 )
-            )
 
-            self.screen.blit(restart_text, restart_rect)
+                text_rect = text.get_rect(
+                    center=(
+                        const.SCREEN_WIDTH // 2,
+                        290
+                    )
+                )
+
+                self.screen.blit(text, text_rect)
+
+                # Botão Jogar Novamente
+                self.draw_result_button(
+                    self.restart_button,
+                    "JOGAR NOVAMENTE",
+                    self.selected_result_option == 0
+                )
+
+                # Botão Voltar ao Menu
+                self.draw_result_button(
+                    self.menu_button,
+                    "VOLTAR AO MENU",
+                    self.selected_result_option == 1
+                )
+
+                # Instrução de navegação
+                instruction = self.distance_font.render(
+                    "Use as SETAS para selecionar e ENTER para confirmar",
+                    True,
+                    (255, 255, 255)
+                )
+
+                instruction_rect = instruction.get_rect(
+                    center=(
+                        const.SCREEN_WIDTH // 2,
+                        570
+                    )
+                )
+
+                self.screen.blit(instruction, instruction_rect)
 
         pygame.display.flip()
 
