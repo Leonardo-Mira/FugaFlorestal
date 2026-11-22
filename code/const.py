@@ -9,8 +9,8 @@ TARGET_DISTANCE = 1000
 
 # Configurações do personagem
 PLAYER_SPEED = 5
-PLAYER_JUMP_STRENGTH = -15
-GRAVITY = 0.8
+PLAYER_JUMP_STRENGTH = -13
+GRAVITY = 0.48
 
 # Configurações dos obstáculos
 OBSTACLE_SPEED = 6
