@@ -20,9 +20,10 @@ class Game:
 
         pygame.display.set_caption(const.SCREEN_TITLE)
 
-        # Fonte das mensagens
+        # Fontes das mensagens
         self.game_over_font = pygame.font.Font(None, 90)
         self.restart_font = pygame.font.Font(None, 40)
+        self.distance_font = pygame.font.Font(None, 42)
 
         # Controle de FPS
         self.clock = pygame.time.Clock()
@@ -30,6 +31,7 @@ class Game:
         # Controle da execução
         self.running = True
         self.game_over = False
+        self.victory = False
 
         # Inicializa os elementos da partida
         self.reset_game()
@@ -45,8 +47,12 @@ class Game:
         # Reinicia os obstáculos
         self.obstacle_manager = ObstacleManager()
 
-        # Remove o estado de Game Over
+        # Reinicia a distância
+        self.distance = 0
+
+        # Reinicia os estados da partida
         self.game_over = False
+        self.victory = False
 
     def handle_events(self):
 
@@ -58,11 +64,11 @@ class Game:
             if event.type == pygame.KEYDOWN:
 
                 # Pulo do personagem
-                if event.key == pygame.K_SPACE and not self.game_over:
+                if event.key == pygame.K_SPACE and not self.game_over and not self.victory:
                     self.player.jump()
 
                 # Reinicia a partida
-                if event.key == pygame.K_r and self.game_over:
+                if event.key == pygame.K_r and (self.game_over or self.victory):
                     self.reset_game()
 
     def check_collision(self):
@@ -92,7 +98,7 @@ class Game:
     def update(self):
 
         # Atualiza o jogo somente enquanto estiver ativo
-        if not self.game_over:
+        if not self.game_over and not self.victory:
 
             # Atualiza o cenário
             self.parallax.update()
@@ -103,8 +109,16 @@ class Game:
             # Atualiza os obstáculos
             self.obstacle_manager.update()
 
+            # Atualiza a distância percorrida
+            self.distance += 0.025
+
             # Verifica colisões
             self.check_collision()
+
+            # Verifica se alcançou a distância final
+            if not self.game_over and self.distance >= const.TARGET_DISTANCE:
+
+                self.victory = True
 
     def draw(self):
 
@@ -117,8 +131,20 @@ class Game:
         # Desenha o personagem
         self.player.draw(self.screen)
 
-        # Mostra Game Over
-        if self.game_over:
+        # Mostra a distância percorrida
+        distance_text = self.distance_font.render(
+            f"Distância: {int(self.distance)} m",
+            True,
+            (255, 255, 255)
+        )
+
+        self.screen.blit(
+            distance_text,
+            (30, 25)
+        )
+
+        # Mostra Game Over ou Vitória
+        if self.game_over or self.victory:
 
             overlay = pygame.Surface(
                 (const.SCREEN_WIDTH, const.SCREEN_HEIGHT)
@@ -129,9 +155,14 @@ class Game:
 
             self.screen.blit(overlay, (0, 0))
 
-            # Mensagem principal
+            # Define a mensagem conforme o resultado
+            if self.victory:
+                message = "VOCE VENCEU!"
+            else:
+                message = "GAME OVER"
+
             text = self.game_over_font.render(
-                "GAME OVER",
+                message,
                 True,
                 (255, 255, 255)
             )

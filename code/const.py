@@ -5,7 +5,7 @@ SCREEN_TITLE = "FUGA FLORESTAL"
 FPS = 60
 
 # Configurações do jogo
-TARGET_DISTANCE = 1000
+TARGET_DISTANCE = 30
 
 # Configurações do personagem
 PLAYER_SPEED = 5
