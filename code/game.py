@@ -20,23 +20,32 @@ class Game:
 
         pygame.display.set_caption(const.SCREEN_TITLE)
 
-        # Inicialização do cenário
-        self.parallax = Parallax(self.screen)
-
-        # Inicialização do personagem
-        self.player = Player()
-
-        # Inicialização dos obstáculos
-        self.obstacle_manager = ObstacleManager()
-
-        # Fonte da mensagem de Game Over
+        # Fonte das mensagens
         self.game_over_font = pygame.font.Font(None, 90)
+        self.restart_font = pygame.font.Font(None, 40)
 
         # Controle de FPS
         self.clock = pygame.time.Clock()
 
         # Controle da execução
         self.running = True
+        self.game_over = False
+
+        # Inicializa os elementos da partida
+        self.reset_game()
+
+    def reset_game(self):
+
+        # Reinicia o cenário
+        self.parallax = Parallax(self.screen)
+
+        # Reinicia o personagem
+        self.player = Player()
+
+        # Reinicia os obstáculos
+        self.obstacle_manager = ObstacleManager()
+
+        # Remove o estado de Game Over
         self.game_over = False
 
     def handle_events(self):
@@ -48,8 +57,13 @@ class Game:
 
             if event.type == pygame.KEYDOWN:
 
+                # Pulo do personagem
                 if event.key == pygame.K_SPACE and not self.game_over:
                     self.player.jump()
+
+                # Reinicia a partida
+                if event.key == pygame.K_r and self.game_over:
+                    self.reset_game()
 
     def check_collision(self):
 
@@ -115,6 +129,7 @@ class Game:
 
             self.screen.blit(overlay, (0, 0))
 
+            # Mensagem principal
             text = self.game_over_font.render(
                 "GAME OVER",
                 True,
@@ -124,14 +139,29 @@ class Game:
             text_rect = text.get_rect(
                 center=(
                     const.SCREEN_WIDTH // 2,
-                    const.SCREEN_HEIGHT // 2
+                    const.SCREEN_HEIGHT // 2 - 30
                 )
             )
 
             self.screen.blit(text, text_rect)
 
-        pygame.display.flip()
+            # Instrução para reiniciar
+            restart_text = self.restart_font.render(
+                "Pressione R para jogar novamente",
+                True,
+                (255, 255, 255)
+            )
 
+            restart_rect = restart_text.get_rect(
+                center=(
+                    const.SCREEN_WIDTH // 2,
+                    const.SCREEN_HEIGHT // 2 + 40
+                )
+            )
+
+            self.screen.blit(restart_text, restart_rect)
+
+        pygame.display.flip()
 
     def run(self):
 
@@ -143,12 +173,12 @@ class Game:
 
             self.draw()
 
+            # Controle de FPS
             self.clock.tick(const.FPS)
 
-            # Obtém o FPS atual
+            # Exibe o FPS no título da janela
             fps = self.clock.get_fps()
 
-            # Exibe o FPS no título da janela
             pygame.display.set_caption(
                 f"{const.SCREEN_TITLE} - FPS: {fps:.1f}"
             )
