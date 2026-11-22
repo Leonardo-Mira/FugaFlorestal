@@ -286,7 +286,7 @@ class Game:
 
                 # Define a mensagem conforme o resultado
                 if self.victory:
-                    message = "VOCE VENCEU!"
+                    message = "VOCÊ VENCEU!"
                 else:
                     message = "GAME OVER"
 

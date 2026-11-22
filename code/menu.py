@@ -198,7 +198,7 @@ class Menu:
 
         # Instrução dos controles do jogo
         jump_instruction = self.instruction_font.render(
-            "Pressione ESPACO para pular durante o jogo",
+            "Pressione ESPAÇO para pular durante o jogo",
             True,
             (255, 255, 255)
         )
